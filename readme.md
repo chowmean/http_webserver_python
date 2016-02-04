@@ -3,9 +3,9 @@
 
 ###How to use:
 - Run the file with HOST and PORT input from command line 
-'''
+```
 python asynchttpserver.py 8080 0.0.0.0
-'''
+```
 
 
 ###Features
