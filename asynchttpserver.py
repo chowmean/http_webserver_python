@@ -7,7 +7,9 @@ import SocketServer
 import time
 import json
 import sys
+import redis
 
+redis_database = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 def terminate_thread(thread):
     """Terminates a python thread from another thread.
@@ -30,18 +32,96 @@ def terminate_thread(thread):
 
 
 
+
+#=======================urlparserclass======================
+def urlparser(resource):
+	method=resource[0].split(' ')[0]
+	url=resource[0].split(' ')[1]
+	return method,url
+
+
+#=============================request handler class==========
+
+
+def create_request(data,thread):
+	data_dict=dict()
+	flag=0
+	conntime=data.split('&')
+	for a in conntime:
+		data_dict[a.split('=')[0]]=a.split('=')[1]
+	if 'connId' in data_dict:
+		conn_id=data_dict['connId']
+	else:
+		flag=flag+1
+	if 'timeout' in data_dict:
+		timeout=data_dict['timeout']
+	else:
+		flag=flag+2
+	redis_database.set(conn_id,thread.getName())
+	redis_database.set(thread.getName,start_time)
+	return 1
+
+def get_thread_by_name(name):
+	for a in threading.enumerate():
+		if(a.getName()==name)
+			return a
+	return "error"
+
+
+def get_thread_time(thread):
+	name=thread.getName()
+	start_time=redis_database.get(name)
+	return time.time()-start_time
+
+
+
+def give_server_status():
+	re=dict()
+	for key in redis_database.scan_iter():
+		thread=get_thread_by_name(r.get(key))
+		b=get_thread_time(thread)
+		re['key']=b
+	return re
+
+
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
 
     def handle(self):
-        data = self.request.recv(1024)
+        start_time=time.time()
+	data = self.request.recv(1024)
         data=data.split('&')
-        request_data=dict()
-        for dat in data:
+       
+	request_data=dict()
+	for dat in data:
         	t=dat.split('=')
         	request_data[t[0]]=t[1]
-        print request_data
-        print self
+        method,url=urlparser(data)
+	print method,url
+	if(url.split('?')[0]=='api/request'):
+		create_request(url.split('?')[1],threading.current_thread().getName(),start_time)
+		work()
+		a=dict()
+	        a['status']="OK"
+       		self.request.send("HTTP/1.1 200 OK\r\n" +
+                               "Content-Type: application/json\r\n"+
+                               "Connection: Alive\r\n")
+        	self.request.send("\r\n")
+        	self.request.send(json.dumps(a))
+
+
+	elif(url=='serverStatus'):
+		data=give_server_status()
+		a=dict()
+		a['severs']=data
+                self.request.send("HTTP/1.1 200 OK\r\n" +
+                               "Content-Type: application/json\r\n"+
+                               "Connection: Alive\r\n")
+                self.request.send("\r\n")
+                self.request.send(json.dumps(a))
+
+
+
 	for i in range(0,20):
 		print i
 		if threading.current_thread().getName()=='Thread-3':
