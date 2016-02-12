@@ -81,16 +81,17 @@ def get_thread_by_name(name):
 
 
 def get_thread_time(thread):
-	name=thread.getName()
+	name=thread
 	start_time=redis_database.get(name)
-	return time.time()-start_time
+	print start_time
+	return int(time.time())-int(start_time)
 
 
 
 def give_server_status():
 	re=dict()
 	for key in redis_database.scan_iter():
-		thread=get_thread_by_name(r.get(key))
+		thread=get_thread_by_name(redis_database.get(key))
 		b=get_thread_time(thread)
 		re['key']=b
 	return re
@@ -115,7 +116,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         	self.request.send("\r\n")
         	self.request.send(json.dumps(a))		
 
-	elif(url=='serverStatus'):
+	elif(url=='/serverStatus'):
 		data=give_server_status()
 		a=dict()
 		a['severs']=data

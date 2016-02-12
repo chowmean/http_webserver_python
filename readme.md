@@ -2,11 +2,17 @@
 ##This is made using SOCKETSERVER
 
 ###How to use:
+- Install redis server
+``` sudo apt-get install redis-server```
+- Run redis server
+```redis-server```
 - Run the file with HOST and PORT input from command line 
 ```
 python asynchttpserver.py 8080 0.0.0.0
 ```
+###Endpoint
 
+- Get /api/request?connId=12&timeout=120
 
 ###Features
 - [x] Multithreading
