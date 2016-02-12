@@ -35,15 +35,21 @@ def terminate_thread(thread):
 
 #=======================urlparserclass======================
 def urlparser(resource):
-	method=resource[0].split(' ')[0]
-	url=resource[0].split(' ')[1]
+	method=resource.split(' ')[0]
+	url=resource.split(' ')[1]
 	return method,url
 
 
 #=============================request handler class==========
 
+def work(timer):
+	for i in range(0,int(timer)):
+		time.sleep(1)
+		print 'working... ',str(i)
+	return 1
 
-def create_request(data,thread):
+
+def  create_request(data,thread,start_time):
 	data_dict=dict()
 	flag=0
 	conntime=data.split('&')
@@ -57,13 +63,19 @@ def create_request(data,thread):
 		timeout=data_dict['timeout']
 	else:
 		flag=flag+2
-	redis_database.set(conn_id,thread.getName())
-	redis_database.set(thread.getName,start_time)
+	redis_database.set(conn_id,thread)
+	redis_database.set(thread,start_time)
+	redis_database.set(thread+'timeout',timeout)
+	work(timeout)
+	redis_database.delete(conn_id)
+	redis_database.delete(thread)
+	redis_database.delete(thread+'timeout')
+	print "Deleted Redis entries"
 	return 1
 
 def get_thread_by_name(name):
 	for a in threading.enumerate():
-		if(a.getName()==name)
+		if(a.getName()==name):
 			return a
 	return "error"
 
@@ -89,26 +101,19 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         start_time=time.time()
-	data = self.request.recv(1024)
-        data=data.split('&')
-       
-	request_data=dict()
-	for dat in data:
-        	t=dat.split('=')
-        	request_data[t[0]]=t[1]
+	data = self.request.recv(1024) 
         method,url=urlparser(data)
 	print method,url
-	if(url.split('?')[0]=='api/request'):
+	if(url.split('?')[0]=='/api/request'):
+		print 'requesting server thread...'
 		create_request(url.split('?')[1],threading.current_thread().getName(),start_time)
-		work()
 		a=dict()
 	        a['status']="OK"
        		self.request.send("HTTP/1.1 200 OK\r\n" +
                                "Content-Type: application/json\r\n"+
                                "Connection: Alive\r\n")
         	self.request.send("\r\n")
-        	self.request.send(json.dumps(a))
-
+        	self.request.send(json.dumps(a))		
 
 	elif(url=='serverStatus'):
 		data=give_server_status()
@@ -122,34 +127,34 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
 
 
-	for i in range(0,20):
-		print i
-		if threading.current_thread().getName()=='Thread-3':
-                        break
-		time.sleep(1)
+	#for i in range(0,20):
+	#	print i
+	#	if threading.current_thread().getName()=='Thread-3':
+        #                break
+	#	time.sleep(1)
 
-        for a in threading.enumerate():
-		print a.getName()
-		if a.getName()=='Thread-2':
-			thrd=a
-			break
-        for i in range (0,10):
-		print i
-		time.sleep(1)
-		if i==5:
-			try:
-				terminate_thread(thrd)
-				print "thread therminated succesfuly"
-			except:
-				print "error"
+        #for a in threading.enumerate():
+	#	print a.getName()
+	#	if a.getName()=='Thread-2':
+	#		thrd=a
+	#		break
+        #for i in range (0,10):
+	#	print i
+	#	time.sleep(1)
+	#	if i==5:
+	#		try:
+	#			terminate_thread(thrd)
+	#			print "thread therminated succesfuly"
+	#		except:
+	#			print "error"
 	#response = "{}: {}".format(cur_thread.name, data)
-        a=dict()
-        a['message']="success"
-        self.request.send("HTTP/1.1 200 OK\r\n" +
-                               "Content-Type: application/json\r\n"+
-                               "Connection: Alive\r\n")
-        self.request.send("\r\n")
-        self.request.send(json.dumps(a))
+        #a=dict()
+        #a['message']="success"
+        #self.request.send("HTTP/1.1 200 OK\r\n" +
+        #                       "Content-Type: application/json\r\n"+
+        #                       "Connection: Alive\r\n")
+        #self.request.send("\r\n")
+        #self.request.send(json.dumps(a))
 
 
 
