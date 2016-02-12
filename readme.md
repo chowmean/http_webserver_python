@@ -13,6 +13,7 @@ python asynchttpserver.py 8080 0.0.0.0
 - [x] Handling all type of requests.
 - [ ] Error Handling
 - [ ] Adding function to kill the request in between.
-
+- [ ] URL handling and mapping
+- [ ] Implementing cache using redis
 
 __author__ :  chowmean
