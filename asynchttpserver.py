@@ -66,10 +66,16 @@ def  create_request(data,thread,start_time):
 	redis_database.set(conn_id,thread)
 	redis_database.set(thread,start_time)
 	redis_database.set(thread+'timeout',timeout)
+	for key in redis_database.scan_iter():
+                print key,redis_database.get(key)
+
 	work(timeout)
 	redis_database.delete(conn_id)
 	redis_database.delete(thread)
 	redis_database.delete(thread+'timeout')
+	for key in redis_database.scan_iter():
+                print redis_database.get(key)
+
 	print "Deleted Redis entries"
 	return 1
 
@@ -82,6 +88,7 @@ def get_thread_by_name(name):
 
 def get_thread_time(thread):
 	name=thread
+	print 'name',name
 	start_time=redis_database.get(name)
 	print start_time
 	return int(time.time())-int(start_time)
@@ -91,7 +98,9 @@ def get_thread_time(thread):
 def give_server_status():
 	re=dict()
 	for key in redis_database.scan_iter():
+		print redis_database.get(key)
 		thread=get_thread_by_name(redis_database.get(key))
+		print thread
 		b=get_thread_time(thread)
 		re['key']=b
 	return re
