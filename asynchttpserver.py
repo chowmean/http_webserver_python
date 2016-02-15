@@ -89,9 +89,10 @@ def get_thread_by_name(name):
 
 def get_thread_time(thread):
 	name=thread.getName()
+	timeout=redis_database.get('timeout_'+name)
 	start_time=redis_database.get('name_'+name)
 	print start_time
-	return (time.time())-float(start_time)
+	return float(timeout)-((time.time())-float(start_time))
 
 
 
@@ -104,10 +105,11 @@ def give_server_status():
 			thread=get_thread_by_name(redis_database.get(a))
 			print thread
 			b=get_thread_time(thread)
-			re['key']=b
+			
+			re[key]=b
 		else:
 			continue
-		return re
+	return re
 
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
