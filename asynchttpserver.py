@@ -64,15 +64,15 @@ def  create_request(data,thread,start_time):
 	else:
 		flag=flag+2
 	redis_database.set(conn_id,thread)
-	redis_database.set(thread,start_time)
-	redis_database.set(thread+'timeout',timeout)
+	redis_database.set('name_'+thread,start_time)
+	redis_database.set('timeout_'+thread,timeout)
 	for key in redis_database.scan_iter():
                 print key,redis_database.get(key)
 
 	work(timeout)
 	redis_database.delete(conn_id)
-	redis_database.delete(thread)
-	redis_database.delete(thread+'timeout')
+	redis_database.delete('name_'+thread)
+	redis_database.delete('timeout_'+thread)
 	for key in redis_database.scan_iter():
                 print redis_database.get(key)
 
@@ -81,29 +81,33 @@ def  create_request(data,thread,start_time):
 
 def get_thread_by_name(name):
 	for a in threading.enumerate():
+		print a.getName(),name
 		if(a.getName()==name):
 			return a
 	return "error"
 
 
 def get_thread_time(thread):
-	name=thread
-	print 'name',name
-	start_time=redis_database.get(name)
+	name=thread.getName()
+	start_time=redis_database.get('name_'+name)
 	print start_time
-	return int(time.time())-int(start_time)
+	return (time.time())-float(start_time)
 
 
 
 def give_server_status():
 	re=dict()
 	for key in redis_database.scan_iter():
-		print redis_database.get(key)
-		thread=get_thread_by_name(redis_database.get(key))
-		print thread
-		b=get_thread_time(thread)
-		re['key']=b
-	return re
+		a=key
+		print a
+		if a.split('_')[0] != 'name' and a.split('_')[0] != 'timeout':
+			thread=get_thread_by_name(redis_database.get(a))
+			print thread
+			b=get_thread_time(thread)
+			re['key']=b
+		else:
+			continue
+		return re
 
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
