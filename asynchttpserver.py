@@ -112,6 +112,22 @@ def give_server_status():
 	return re
 
 
+
+#====================kill request============
+def kill_request(data):
+	connId=data.split(' ')[-1].split('\r\n\r\n')[1].split('=')[1]
+	try:
+		thread_name=redis_database.get(connId)
+		thread=get_thread_by_name(thread_name)
+		terminate_thread(thread)
+		redis_database.delete(conn_id)
+	        redis_database.delete('name_'+thread_name)
+       		redis_database.delete('timeout_'+thread_name)
+		return -1
+	except:
+		return connId
+
+
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
 
@@ -141,6 +157,18 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 self.request.send("\r\n")
                 self.request.send(json.dumps(a))
 
+	elif(url=='/api/kill'):
+                data=kill_request(data)
+                a=dict()
+		if data==-1:
+			a['status']='OK'
+                else:
+			a['status']="invalid connection id:"+str(data)
+		self.request.send("HTTP/1.1 200 OK\r\n" +
+                               "Content-Type: application/json\r\n"+
+                               "Connection: Alive\r\n")
+                self.request.send("\r\n")
+                self.request.send(json.dumps(a))
 
 
 	#for i in range(0,20):
