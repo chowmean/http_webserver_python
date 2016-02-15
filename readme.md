@@ -38,11 +38,19 @@
 
 - Run these commands to do so in python shell
 
-``` import python
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
-    for key in r.scan_iter():
-                print key, r.delete(key)
-```
+
+
+ 
+
+``` import python ```
+
+``` r = redis.StrictRedis(host='localhost', port=6379, db=0) ```
+
+``` key in r.scan_iter(): ```
+
+```...print key, r.delete(key) ```
+     
+
 
 
 __author__ :  chowmean
